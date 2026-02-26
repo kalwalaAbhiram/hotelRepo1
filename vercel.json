@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/google31cd10c61ed0e214.html",
+      "destination": "/google31cd10c61ed0e214.html"
+    },
+    {
+      "source": "/((?!static|.*\\..*$).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

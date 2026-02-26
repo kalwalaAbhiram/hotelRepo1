@@ -1,31 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock, FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { AiFillStar } from 'react-icons/ai';
-// import './fonts.css';
+import { FaMapMarkerAlt, FaPhoneAlt, FaClock, FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaChevronLeft, FaChevronRight, FaChevronUp, FaLeaf, FaUtensils, FaStar, FaArrowRight } from 'react-icons/fa';
 
 const App = () => {
   const [activeNav, setActiveNav] = useState('home');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
   const [scrollY, setScrollY] = useState(0);
-  const [menuVisible, setMenuVisible] = useState(false);
-  // Add a state to track if the phone number has been emphasized
   const [phoneHighlighted, setPhoneHighlighted] = useState(false);
-  const [callOnlyMode, setCallOnlyMode] = useState(true); // New state to indicate call-only mode
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const heroRef = useRef(null);
 
-  // Handle scroll events
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
-      
-      // Determine active section based on scroll position
+      setShowBackToTop(window.scrollY > 400);
       const sections = ['home', 'menu', 'about', 'testimonials', 'contact'];
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -38,230 +28,114 @@ const App = () => {
         }
       }
     };
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
-  // Show menu with animation after page loads
+
+  // Auto-rotate testimonials
   useEffect(() => {
-    setTimeout(() => setMenuVisible(true), 500);
+    const timer = setInterval(() => {
+      setCurrentTestimonial(prev => (prev + 1) % 4);
+    }, 5000);
+    return () => clearInterval(timer);
   }, []);
-  
-  // Form handlers
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setContactForm({
-      ...contactForm,
-      [name]: value
-    });
-  };
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Form submission logic would go here
-    alert('Thank you for your message! We will get back to you soon.');
-    setContactForm({
-      name: '',
-      email: '',
-      phone: '',
-      message: ''
-    });
-  };
-  
-  // Tiffin menu items data
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = showMobileMenu ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showMobileMenu]);
+
   const menuItems = [
-    {
-      id: 1,
-      name: 'Masala Dosa',
-      description: 'Crispy rice crepe filled with spiced potato curry',
-      price: 40,
-      image: '/tiffins/masala.jpg'
-    },
-    {
-      id: 2,
-      name: 'Plain Dosa',
-      description: 'Traditional rice crepe served with sambar and chutney',
-      price: 40,
-      image: '/tiffins/plaindosa.webp'
-    },
-    {
-      id: 3,
-      name: 'Cut Dosa',
-      description: 'Crispy dosa cut into pieces, served with sambar and chutney',
-      price: 55,
-      image: '/tiffins/cutdosa.jpg'
-    },
-    {
-      id: 4,
-      name: 'Onion Dosa',
-      description: 'Dosa topped with sautéed onions and spices',
-      price: 55,
-      image: '/tiffins/Onion-Masala-Dosa.jpg'
-    },
-    {
-      id: 5,
-      name: 'Uthappam',
-      description: 'Thick pancake with vegetables and spices',
-      price: 55,
-      image: '/tiffins/uttapam.jpg'
-    },
-    {
-      id: 6,
-      name: 'Upma Dosa',
-      description: 'Dosa filled with savory semolina upma',
-      price: 55,
-      image: '/tiffins/upmadosa.jpg'
-    },
-    {
-      id: 7,
-      name: 'Neeyi Dosa',
-      description: 'Ghee-roasted dosa with delicious aroma',
-      price: 55,
-      image: '/tiffins/upma.webp'
-    },
-    {
-      id: 8,
-      name: 'Mysoor Bajji',
-      description: 'Deep-fried  Mysore touch',
-      price: 40,
-      image: '/tiffins/Mysoor-Bajji.jpg'
-    },
-    {
-      id: 9,
-      name: 'Poori',
-      description: 'Deep-fried wheat bread served with potato curry',
-      price: 40,
-      image: '/tiffins/poori.png'
-    },
-    {
-      id: 10,
-      name: 'Idli',
-      description: 'Steamed rice cake served with sambar and chutney',
-      price: 40,
-      image: '/tiffins/idly.jpg'
-    },
-    {
-      id: 11,
-      name: 'Upma',
-      description: 'Savory semolina porridge with vegetables',
-      price: 35,
-      image: '/tiffins/upma 1.webp'
-    },
-    {
-      id: 12,
-      name: 'Ragi Dosa',
-      description: 'Nutritious finger millet dosa with health benefits',
-      price: 55,
-      image: '/tiffins/ragi.jpg'
-    },
-    {
-      id: 13,
-      name: 'Vada',
-      description: 'Crispy fried lentil donuts served with sambar',
-      price: 40,
-      image: '/tiffins/vadaa.jpg'
-    }
+    { id: 1, name: 'Masala Dosa', description: 'Crispy rice crepe filled with spiced potato curry', price: 40, image: '/tiffins/masaladosa.jpg', category: 'dosas' },
+    { id: 2, name: 'Plain Dosa', description: 'Traditional rice crepe served with sambar and chutney', price: 40, image: '/tiffins/plaindosa.webp', category: 'dosas' },
+    { id: 3, name: 'Cut Dosa', description: 'Crispy dosa cut into pieces, served with sambar and chutney', price: 55, image: '/tiffins/cutdosa.jpg', category: 'dosas' },
+    { id: 4, name: 'Onion Dosa', description: 'Dosa topped with saut\u00e9ed onions and spices', price: 55, image: '/tiffins/Onion-Masala-Dosa.jpg', category: 'dosas' },
+    { id: 5, name: 'Uthappam', description: 'Thick pancake with vegetables and spices', price: 55, image: '/tiffins/uttapam.jpg', category: 'breakfast' },
+    { id: 6, name: 'Upma Dosa', description: 'Dosa filled with savory semolina upma', price: 55, image: '/tiffins/upmadosa.jpg', category: 'dosas' },
+    { id: 7, name: 'Neeyi Dosa', description: 'Ghee-roasted dosa with delicious aroma', price: 55, image: '/tiffins/upma.webp', category: 'dosas' },
+    { id: 8, name: 'Mysoor Bajji', description: 'Deep-fried with a Mysore touch', price: 40, image: '/tiffins/bonda.jpg', category: 'snacks' },
+    { id: 9, name: 'Poori', description: 'Deep-fried wheat bread served with potato curry', price: 40, image: '/tiffins/poori.png', category: 'breakfast' },
+    { id: 10, name: 'Idli', description: 'Steamed rice cake served with sambar and chutney', price: 40, image: '/tiffins/idly.jpg', category: 'breakfast' },
+    { id: 11, name: 'Upma', description: 'Savory semolina porridge with vegetables', price: 35, image: '/tiffins/upma 1.webp', category: 'breakfast' },
+    { id: 12, name: 'Ragi Dosa', description: 'Nutritious finger millet dosa with health benefits', price: 55, image: '/tiffins/ragi.jpg', category: 'dosas' },
+    { id: 13, name: 'Vada', description: 'Crispy fried lentil donuts served with sambar', price: 40, image: '/tiffins/vada.jpg', category: 'snacks' },
   ];
 
-  const testimonials = [
-    {
-      id: 1,
-      name: "Rajesh Kumar",
-      comment: "The masala dosa here is simply outstanding! Authentic South Indian flavors that remind me of home.",
-      rating: 5
-    },
-    {
-      id: 2,
-      name: "Priya Sharma",
-      comment: "We visit every weekend for their idli and vada. The sambhar is the best in town!",
-      rating: 5
-    },
-    {
-      id: 3,
-      name: "David Wilson",
-      comment: "First time trying South Indian cuisine and I'm hooked! The staff was very helpful in recommending dishes.",
-      rating: 4
-    }
+  const filteredItems = activeCategory === 'all' ? menuItems : menuItems.filter(item => item.category === activeCategory);
+
+  const testimonialData = [
+    { id: 1, name: "Sarah Johnson", image: './ratings/one.jpg', designation: "Food Blogger" },
+    { id: 2, name: "Michael Chen", image: './ratings/two.jpg', designation: "Regular Customer" },
+    { id: 3, name: "Jessica Williams", image: './ratings/three.jpg', designation: "Food Critic" },
+    { id: 4, name: "David Rodriguez", image: './ratings/four.jpg', designation: "First-time Visitor" },
   ];
 
-  // Scroll to section function with improved order handling
   const scrollToSection = (sectionId, orderDetails = null) => {
-    // Use scrollIntoView for smooth scrolling to the top of the section
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
     }
     setActiveNav(sectionId);
     setShowMobileMenu(false);
-
-    // If orderDetails is provided, pre-fill contact form with order information
     if (orderDetails) {
-      setContactForm(prevForm => ({
-        ...prevForm,
-        message: `Hi, I would like to order ${orderDetails.quantity || 1} ${orderDetails.name} (₹${orderDetails.price}). Please contact me for delivery details.`
-      }));
-
-      // Highlight the phone number section to emphasize calling as the preferred option
       setPhoneHighlighted(true);
       setTimeout(() => setPhoneHighlighted(false), 3000);
     }
   };
 
-  // Toggle mobile menu
-  const toggleMobileMenu = () => {
-    setShowMobileMenu(!showMobileMenu);
-  };
-  
-  // Menu reveal animation
-  const staggerMenuItems = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const menuItemAnimation = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } }
-  };
-
-  // Fix jsx-a11y/anchor-is-valid warnings by using proper href values
-  const handleAnchorClick = (e, sectionId) => {
-    e.preventDefault();
-    scrollToSection(sectionId);
-  };
-
-  // Carousel navigation handlers
-  const testimonialCount = 5;
-  const handleTestimonialDotClick = (idx) => setCurrentTestimonial(idx);
-  const handlePrevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + testimonialCount) % testimonialCount);
-  const handleNextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % testimonialCount);
+  const categories = [
+    { key: 'all', label: 'All Items', icon: <FaUtensils /> },
+    { key: 'dosas', label: 'Dosas', icon: '\ud83e\uded3' },
+    { key: 'breakfast', label: 'Breakfast', icon: '\ud83c\udf73' },
+    { key: 'snacks', label: 'Snacks', icon: '\ud83c\udf58' },
+  ];
 
   return (
     <div className="app">
-      {/* Header */}
-      <motion.header 
+      {/* ===== HEADER ===== */}
+      <motion.header
         className={`header ${scrollY > 50 ? 'scrolled' : ''}`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
+        transition={{ type: "spring", stiffness: 80, damping: 20 }}
       >
         <div className="container header-content">
-          <motion.div 
-            className="logo"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400 }}
-          >
-            <h1>Neelakantam Tiffins</h1>
+          <motion.div className="logo" whileHover={{ scale: 1.03 }}>
+            <div className="logo-icon">
+              <FaLeaf />
+            </div>
+            <div className="logo-text">
+              <h1>Neelakantam</h1>
+              <span className="logo-tagline">Authentic Tiffins</span>
+            </div>
           </motion.div>
-          <div className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+
+          <nav className="desktop-nav">
+            <ul className="nav-list">
+              {['home', 'menu', 'about', 'testimonials', 'contact'].map((item) => (
+                <li key={item} className={activeNav === item ? 'active' : ''}>
+                  <a href={`#${item}`} onClick={e => { e.preventDefault(); scrollToSection(item); }}>
+                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <motion.button
+            className="order-btn-header"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => scrollToSection('contact')}
+          >
+            Order Now
+          </motion.button>
+
+          <div className="mobile-menu-toggle" onClick={() => setShowMobileMenu(!showMobileMenu)}>
             <div className={`hamburger ${showMobileMenu ? 'active' : ''}`}>
               <span></span>
               <span></span>
@@ -271,2237 +145,1992 @@ const App = () => {
         </div>
       </motion.header>
 
-      {/* Navigation */}
-      <motion.nav 
-        className={`navigation ${showMobileMenu ? 'show' : ''} ${scrollY > 50 ? 'scrolled' : ''}`}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="container">
-          <motion.ul 
-            className="nav-list"
-            variants={staggerMenuItems}
-            initial="hidden"
-            animate="show"
-          >
-            {['home', 'menu', 'about', 'testimonials', 'contact'].map((item) => (
-              <motion.li 
-                key={item}
-                className={activeNav === item ? 'active' : ''}
-                variants={menuItemAnimation}
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <a
-                  href={`#${item}`}
-                  onClick={e => {
-                    e.preventDefault();
-                    scrollToSection(item);
-                  }}
-                  style={{ color: 'inherit', textDecoration: 'none', display: 'block', width: '100%' }}
-                >
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
+      {/* ===== MOBILE DRAWER ===== */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <>
+            <motion.div
+              className="mobile-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileMenu(false)}
+            />
+            <motion.div
+              className="mobile-drawer"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            >
+              <div className="drawer-header">
+                <div className="drawer-logo">
+                  <FaLeaf className="drawer-logo-icon" />
+                  <span>Neelakantam</span>
+                </div>
+                <button className="drawer-close" onClick={() => setShowMobileMenu(false)}>{'\u2715'}</button>
+              </div>
+              <ul className="drawer-nav">
+                {['home', 'menu', 'about', 'testimonials', 'contact'].map((item, i) => (
+                  <motion.li
+                    key={item}
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className={activeNav === item ? 'active' : ''}
+                  >
+                    <a href={`#${item}`} onClick={e => { e.preventDefault(); scrollToSection(item); }}>
+                      {item.charAt(0).toUpperCase() + item.slice(1)}
+                      <FaArrowRight className="drawer-arrow" />
+                    </a>
+                  </motion.li>
+                ))}
+              </ul>
+              <div className="drawer-footer">
+                <a href="tel:+919876543210" className="drawer-cta">
+                  <FaPhoneAlt /> Call to Order
                 </a>
-              </motion.li>
-            ))}
-          </motion.ul>
-        </div>
-      </motion.nav>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Hero Section */}
-      <section id="home" className="hero">
-        <div className="hero-overlay"></div>
-        <motion.div 
+      {/* ===== HERO ===== */}
+      <section id="home" className="hero" ref={heroRef}>
+        <div className="hero-bg">
+          <img src="/start.jpg" alt="" className="hero-bg-img" style={{ transform: `translateY(${scrollY * 0.3}px)` }} />
+          <div className="hero-overlay" />
+        </div>
+        <motion.div
           className="hero-content"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
+          transition={{ delay: 0.3, duration: 0.9 }}
         >
+          <motion.span
+            className="hero-badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <FaStar className="hero-badge-star" /> 35+ Years of Tradition
+          </motion.span>
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >Experience Authentic South Indian Flavors</motion.h1>
+            transition={{ delay: 0.7, duration: 0.6 }}
+          >
+            Experience Authentic<br />
+            <span className="hero-highlight">South Indian</span> Flavors
+          </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.5 }}
-          >Serving the finest South Indian delicacies with traditional recipes passed down through generations</motion.p>
-          <motion.button 
-            className="btn-primary"
-            onClick={() => scrollToSection('menu')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          >
+            Serving the finest South Indian delicacies with traditional recipes passed down through generations, right from Mahbubnagar
+          </motion.p>
+          <motion.div
+            className="hero-actions"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.5 }}
           >
-            Explore Our Menu
-          </motion.button>
-        </motion.div>
-        <div className="hero-scroll-indicator">
-          <motion.div 
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            <span></span>
+            <motion.button
+              className="btn-primary"
+              onClick={() => scrollToSection('menu')}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              Explore Menu <FaArrowRight style={{ marginLeft: 8 }} />
+            </motion.button>
+            <motion.button
+              className="btn-outline"
+              onClick={() => scrollToSection('contact')}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              Order Now
+            </motion.button>
           </motion.div>
-        </div>
+
+          <motion.div
+            className="hero-stats"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+          >
+            <div className="hero-stat">
+              <strong>35+</strong>
+              <span>Years</span>
+            </div>
+            <div className="hero-stat-divider" />
+            <div className="hero-stat">
+              <strong>13+</strong>
+              <span>Dishes</span>
+            </div>
+            <div className="hero-stat-divider" />
+            <div className="hero-stat">
+              <strong>1000+</strong>
+              <span>Happy Customers</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          className="scroll-indicator"
+          animate={{ y: [0, 12, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+        >
+          <div className="scroll-mouse">
+            <div className="scroll-dot" />
+          </div>
+          <span>Scroll</span>
+        </motion.div>
       </section>
 
-      {/* Menu Section */}
-      <section id="menu" className="menu section">
+      {/* ===== MENU ===== */}
+      <section id="menu" className="menu-section section">
+        <div className="section-decoration">
+          <div className="deco-circle deco-1" />
+          <div className="deco-circle deco-2" />
+        </div>
         <div className="container">
-          <motion.div 
-            className="section-title"
+          <motion.div
+            className="section-header"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2>Our Special Tiffin Menu</h2>
-            <div className="underline"></div>
-            <p className="section-subtitle">Authentic flavors that tell our story</p>
+            <span className="section-label">Our Specialties</span>
+            <h2>Tiffin Menu</h2>
+            <div className="section-underline" />
+            <p className="section-desc">Authentic flavors prepared fresh every morning</p>
           </motion.div>
-        
-          <div className="menu-categories">
-            <motion.button className="menu-category active">All Items</motion.button>
-            <motion.button className="menu-category">Dosas</motion.button>
-            <motion.button className="menu-category">Breakfast</motion.button>
-            <motion.button className="menu-category">Snacks</motion.button>
-          </div>
-          
-          <motion.div 
+
+          <motion.div
+            className="category-tabs"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {categories.map(cat => (
+              <button
+                key={cat.key}
+                className={`category-tab ${activeCategory === cat.key ? 'active' : ''}`}
+                onClick={() => setActiveCategory(cat.key)}
+              >
+                <span className="cat-icon">{cat.icon}</span>
+                {cat.label}
+              </button>
+            ))}
+          </motion.div>
+
+          <motion.div
             className="menu-grid"
+            layout
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.1
-                }
-              }
-            }}
+            viewport={{ once: true, margin: "-80px" }}
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
           >
-            {menuItems.map((item) => (
-              <motion.div 
-                className="menu-card" 
-                key={item.id}
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-                }}
-              >
-                <div className="menu-card-image">
-                  <img src={item.image} alt={item.name} loading="lazy" />
-                  <div className="menu-card-price">₹{item.price}</div>
-                </div>
-                <div className="menu-card-content">
-                  <h3>{item.name}</h3>
-                  <p>{item.description}</p>
-                  <motion.button 
-                    className="menu-card-button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => scrollToSection('contact', { name: item.name, price: item.price })}
-                  >
-                    Order Now
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {filteredItems.map((item) => (
+                <motion.div
+                  className="menu-card"
+                  key={item.id}
+                  layout
+                  variants={{
+                    hidden: { opacity: 0, y: 30, scale: 0.95 },
+                    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5 } }
+                  }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ y: -8 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  <div className="card-image">
+                    <img src={item.image} alt={item.name} loading="lazy" />
+                    <div className="card-price-badge">{'\u20B9'}{item.price}</div>
+                    <div className="card-overlay">
+                      <motion.button
+                        className="card-order-btn"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => scrollToSection('contact', { name: item.name, price: item.price })}
+                      >
+                        Order Now
+                      </motion.button>
+                    </div>
+                  </div>
+                  <div className="card-body">
+                    <h3>{item.name}</h3>
+                    <p>{item.description}</p>
+                    <div className="card-footer">
+                      <span className="card-tag">{item.category}</span>
+                      <button
+                        className="card-link-btn"
+                        onClick={() => scrollToSection('contact', { name: item.name, price: item.price })}
+                      >
+                        Order <FaArrowRight />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </motion.div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="about section">
-        <div className="about-bg-pattern"></div>
+      {/* ===== ABOUT ===== */}
+      <section id="about" className="about-section section">
         <div className="container">
-          <motion.div 
-            className="section-title"
+          <motion.div
+            className="section-header"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2>About Us</h2>
-            <div className="underline"></div>
-            <p className="section-subtitle">Our journey of flavors and tradition</p>
+            <span className="section-label">Know Us Better</span>
+            <h2>Our Story</h2>
+            <div className="section-underline" />
           </motion.div>
-          
-          <div className="about-content">
-            <motion.div 
+
+          <div className="about-grid">
+            <motion.div
+              className="about-image-wrapper"
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7 }}
+            >
+              <div className="about-img-container">
+                <img src="center.jpg" alt="Neelakantam Tiffins Restaurant" />
+                <div className="about-img-accent" />
+                <div className="about-exp-badge">
+                  <strong>35+</strong>
+                  <span>Years of Service</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
               className="about-text"
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7, delay: 0.15 }}
             >
-              <h3>Our Story</h3>
+              <h3>A Legacy of Authentic South Indian Cuisine</h3>
               <p>Started in Mahbubnagar 35 years ago, Neelakantam Tiffins has been proudly serving delicious and authentic South Indian tiffins ever since. We've stayed true to traditional recipes, bringing the real taste of South India to every plate.</p>
-              <p>Our food is prepared using fresh, high-quality ingredients, and we serve it on natural banana leaves to give our customers a truly traditional Indian experience. This small detail reflects our big commitment to culture and authenticity.</p>
+              <p>Our food is prepared using fresh, high-quality ingredients, and we serve it on natural banana leaves to give our customers a truly traditional Indian experience.</p>
               <p>What began as a small tiffin center has now become a trusted name in Mahbubnagar, loved for its homely flavors, simple charm, and warm hospitality.</p>
-            </motion.div>
-
-            <motion.div 
-              className="about-image"
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <img src="center.jpg" alt="Restaurant" />
-              <div className="about-image-accent"></div>
+              <div className="about-highlights">
+                {[
+                  { icon: '\ud83c\udf72', title: 'Fresh Daily', desc: 'Prepared fresh every morning' },
+                  { icon: '\ud83c\udf3f', title: '100% Vegetarian', desc: 'Pure veg South Indian fare' },
+                  { icon: '\ud83d\udc68\u200d\ud83c\udf73', title: 'Expert Chefs', desc: 'Masters of traditional cuisine' },
+                  { icon: '\ud83c\udf43', title: 'Banana Leaf', desc: 'Traditional serving style' },
+                ].map((h, i) => (
+                  <div className="about-highlight-item" key={i}>
+                    <div className="highlight-icon">{h.icon}</div>
+                    <div>
+                      <strong>{h.title}</strong>
+                      <span>{h.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
+        </div>
+      </section>
 
-          <div className="features">
-            {[
-              { icon: "🍲", title: "Fresh Ingredients", desc: "We use only the freshest and highest quality ingredients in all our dishes." },
-              { icon: "👨‍🍳", title: "Expert Chefs", desc: "Our experienced chefs are masters in preparing authentic South Indian cuisine." },
-              { icon: "🌿", title: "Vegetarian Friendly", desc: "Wide range of vegetarian options to satisfy all preferences." },
-              { icon: "🔄", title: "Daily Fresh", desc: "All our items are prepared fresh every day for maximum taste and quality." }
-            ].map((feature, index) => (
-              <motion.div 
-                className="feature" 
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: 0.1 * index }}
-                whileHover={{ y: -10, boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)" }}
-              >
-                <div className="feature-icon">{feature.icon}</div>
-                <h3>{feature.title}</h3>
-                <p>{feature.desc}</p>
-              </motion.div>
+      {/* ===== TESTIMONIALS ===== */}
+      <section id="testimonials" className="testimonials-section section">
+        <div className="container">
+          <motion.div
+            className="section-header"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="section-label">Reviews</span>
+            <h2>What Our Customers Say</h2>
+            <div className="section-underline" />
+            <p className="section-desc">Real experiences from our valued customers</p>
+          </motion.div>
+
+          <div className="testimonial-carousel">
+            <button className="carousel-btn carousel-prev" onClick={() => setCurrentTestimonial(prev => (prev - 1 + 4) % 4)} aria-label="Previous">
+              <FaChevronLeft />
+            </button>
+
+            <div className="carousel-viewport">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  className="testimonial-slide"
+                  key={currentTestimonial}
+                  initial={{ opacity: 0, x: 60, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -60, scale: 0.95 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <div className="testimonial-image-wrapper">
+                    <img
+                      src={testimonialData[currentTestimonial].image}
+                      alt={testimonialData[currentTestimonial].name}
+                      className="testimonial-image"
+                    />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <button className="carousel-btn carousel-next" onClick={() => setCurrentTestimonial(prev => (prev + 1) % 4)} aria-label="Next">
+              <FaChevronRight />
+            </button>
+          </div>
+
+          <div className="carousel-dots">
+            {testimonialData.map((_, i) => (
+              <button
+                key={i}
+                className={`carousel-dot ${i === currentTestimonial ? 'active' : ''}`}
+                onClick={() => setCurrentTestimonial(i)}
+                aria-label={`Go to slide ${i + 1}`}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      <section id="testimonials" className="testimonials section">
+      {/* ===== CONTACT / ORDER ===== */}
+      <section id="contact" className="contact-section section">
         <div className="container">
-          <motion.div 
-            className="section-title"
+          <motion.div
+            className="section-header"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2>What Our Customers Say</h2>
-            <div className="underline"></div>
-            <p className="section-subtitle">The experiences shared by our valued customers</p>
-          </motion.div>
-          
-          <div className="testimonials-container">
-            <div className="testimonial-slider">
-              <button
-                className="testimonial-arrow left"
-                onClick={handlePrevTestimonial}
-                aria-label="Previous testimonial"
-              >
-                <FaChevronLeft />
-              </button>
-              {[
-                {
-                  id: 1,
-                  name: "Sarah Johnson",
-                  rating: 5,
-                  comment: "This product exceeded all my expectations. The customer service team was incredibly helpful throughout the entire process.",
-                  image: './ratings/one.jpg',
-                  designation: "Food Blogger"
-                },
-                {
-                  id: 2,
-                  name: "Michael Chen",
-                  rating: 4,
-                  comment: "Great value for the price. I've been visiting for 3 months now and the quality has remained consistently excellent.",
-                  image: './ratings/two.jpg',
-                  designation: "Regular Customer"
-                },
-                {
-                  id: 3,
-                  name: "Jessica Williams",
-                  rating: 5,
-                  comment: "Absolutely love this place! The authentic flavors solved all my cravings for South Indian cuisine. Highly recommended!",
-                  image: './ratings/three.jpg',
-                  designation: "Food Critic"
-                },
-                {
-                  id: 4,
-                  name: "David Rodriguez",
-                  rating: 4,
-                  comment: "The quality is outstanding. Would definitely visit again and recommend to friends and colleagues.",
-                  image: './ratings/four.jpg',
-                  designation: "First-time Visitor"
-                }
-                // Removed Emma Thompson card
-              ].map((testimonial, index) => (
-                index === currentTestimonial && (
-                  <motion.div 
-                    className="testimonial-card testimonial-slide-image"
-                    key={testimonial.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="testimonial-slide-img"
-                    />
-                  </motion.div>
-                )
-              ))}
-              <button
-                className="testimonial-arrow right"
-                onClick={handleNextTestimonial}
-                aria-label="Next testimonial"
-              >
-                <FaChevronRight />
-              </button>
-            </div>
-            <div className="testimonial-dots">
-              {[...Array(4)].map((_, i) => (
-                <span
-                  key={i}
-                  className={`dot ${i === currentTestimonial ? 'active' : ''}`}
-                  onClick={() => handleTestimonialDotClick(i)}
-                  style={{ cursor: 'pointer' }}
-                ></span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="contact section">
-        <div className="contact-bg-pattern"></div>
-        <div className="container">
-          <motion.div 
-            className="section-title"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-          >
+            <span className="section-label">Get In Touch</span>
             <h2>Order Now</h2>
-            <div className="underline"></div>
-            <p className="section-subtitle">Call us to place your order</p>
+            <div className="section-underline" />
+            <p className="section-desc">Order via Zomato or visit us directly</p>
           </motion.div>
-          <div className="contact-container">
-            <motion.div 
-              className="contact-info call-only"
+
+          <div className="contact-grid">
+            <motion.div
+              className={`zomato-card ${phoneHighlighted ? 'pulse' : ''}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div 
-                className={`contact-item phone-highlight ${phoneHighlighted ? 'pulse-animation' : ''}`}
-                animate={phoneHighlighted ? 
-                  { scale: [1, 1.02, 1], boxShadow: ['0 10px 25px rgba(255,107,53,0.1)', '0 15px 30px rgba(255,107,53,0.3)', '0 10px 25px rgba(255,107,53,0.1)'] } : 
-                  {}
-                }
-                transition={{ duration: 2.5, ease: "easeInOut", repeat: phoneHighlighted ? 2 : 0 }}
+              <div className="zomato-card-glow" />
+              <div className="zomato-icon-wrap">
+                <motion.div
+                  className="zomato-icon"
+                  whileHover={{ scale: 1.1, rotate: [0, -8, 8, -8, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <FaPhoneAlt />
+                </motion.div>
+              </div>
+              <h3>Order on Zomato</h3>
+              <a
+                href="https://zomato.onelink.me/xqzv/8lsrun22"
+                className="zomato-link"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <div className="phone-order-container">
-                  <motion.div 
-                    className="phone-order-icon"
-                    whileHover={{ scale: 1.1, rotate: [0, -10, 10, -10, 0] }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <FaPhoneAlt />
-                  </motion.div>
-                  
-                  <div className="phone-order-content">
-                    <a
-                      href="https://zomato.onelink.me/xqzv/8lsrun22"
-                      className="phone-link-large"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ wordBreak: 'break-word' }}
-                    >
-                      Now in Zomato
-                      <div className="call-now-badge">
-                        <span>Zomato</span>
-                      </div>
-                    </a>
-                    <div className="phone-hours">
-                      <FaClock className="hours-icon" />
-                      <span>Available: 7:00 AM - 1:00 PM</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              <div className="order-instructions">
-                <div className="order-steps">
-                  <h4>How to Order:</h4>
-                  <div className="steps-container">
-                    {[
-                      {
-                        number: 1,
-                        title: "View in Zomato app",
-                        desc: "Our team is ready to take your order"
-                      },
-                      {
-                        number: 2,
-                        title: "Place your order",
-                        desc: "Tell us what you'd like from our menu"
-                      },
-                      {
-                        number: 3,
-                        title: "Provide delivery details",
-                        desc: "take away is available, or you can order in zomato"
-                      }
-                    ].map((step, index) => (
-                      <motion.div 
-                        className="step-item"
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-50px" }}
-                        transition={{ delay: index * 0.2 }}
-                        whileHover={{ y: -5, boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)" }}
-                      >
-                        <div className="step-number">{step.number}</div>
-                        <div className="step-content">
-                          <h5>{step.title}</h5>
-                          <p>{step.desc}</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="restaurant-info">
-                <div className="info-card">
-                  <div className="info-icon"><FaMapMarkerAlt /></div>
-                  <div>
-                    <h4>Our Location</h4>
-                    <p>railway gate, 1-2-1/1ca, Nawabpet Rd, New Gunj, Subhash Nagar, Mahbubnagar, Telangana 509001</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="contact-map">
-                <iframe 
-                  title="Restaurant Location" 
-                  src="https://www.google.com/maps?q=railway+gate,+1-2-1%2F1ca,+Nawabpet+Rd,+New+Gunj,+Subhash+Nagar,+Mahbubnagar,+Telangana+509001&output=embed"
-                  frameBorder="0" 
-                  allowFullScreen=""
-                  loading="lazy"
-                ></iframe>
+                Open in Zomato
+                <FaArrowRight />
+              </a>
+              <div className="zomato-hours">
+                <FaClock />
+                <span>7:00 AM {'\u2013'} 1:00 PM</span>
               </div>
             </motion.div>
-            
-            {/* Hide the form in call-only mode */}
-            {!callOnlyMode && (
-              <motion.div 
-                className="contact-form"
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <h3>{contactForm.message.includes('order') ? 'Complete Your Order' : 'Send us a message'}</h3>
-                <div className="form-container">
-                  {contactForm.message.includes('order') && (
-                    <div className="order-notice">
-                      <p>For faster service, please call us directly at <a href="tel:+919876543210" className="phone-link-inline">+91 98765 43210</a></p>
-                    </div>
-                  )}
-                  
-                  <div className="form-group">
-                    <label htmlFor="name">Your Name</label>
-                    <input 
-                      type="text" 
-                      id="name"
-                      name="name"
-                      value={contactForm.name}
-                      onChange={handleInputChange}
-                      placeholder="Enter your full name"
-                      required 
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="email">Your Email</label>
-                    <input 
-                      type="email" 
-                      id="email"
-                      name="email"
-                      value={contactForm.email}
-                      onChange={handleInputChange}
-                      placeholder="Enter your email address"
-                      required 
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phone">Your Phone</label>
-                    <input 
-                      type="tel" 
-                      id="phone"
-                      name="phone"
-                      value={contactForm.phone}
-                      onChange={handleInputChange}
-                      placeholder="Enter your phone number for delivery"
-                      required
-                    />
-                    <small className="form-hint">* Required for order delivery</small>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="message">Your Message</label>
-                    <textarea 
-                      id="message"
-                      rows="5" 
-                      name="message"
-                      value={contactForm.message}
-                      onChange={handleInputChange}
-                      placeholder="Your message or special instructions for your order"
-                      required
-                    ></textarea>
-                  </div>
-                  <motion.button 
-                    type="button" 
-                    className="btn-primary"
-                    onClick={handleSubmit}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+
+            <motion.div
+              className="steps-card"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              <h3>How to Order</h3>
+              <div className="steps-list">
+                {[
+                  { num: 1, title: "Open Zomato App", desc: "Find us on Zomato or click the link", color: "#2EC4B6" },
+                  { num: 2, title: "Choose Your Items", desc: "Browse our full menu and add to cart", color: "#6A9BD8" },
+                  { num: 3, title: "Place Your Order", desc: "Delivery or takeaway \u2014 your choice!", color: "#FF6B35" },
+                ].map((step, i) => (
+                  <motion.div
+                    className="step-row"
+                    key={i}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15 }}
+                    whileHover={{ x: 6 }}
                   >
-                    {contactForm.message.includes('order') ? 'Place Order' : 'Send Message'}
-                  </motion.button>
+                    <div className="step-num" style={{ background: step.color }}>{step.num}</div>
+                    <div className="step-info">
+                      <strong>{step.title}</strong>
+                      <span>{step.desc}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="location-card"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="location-info">
+                <div className="location-icon-wrap">
+                  <FaMapMarkerAlt />
                 </div>
-              </motion.div>
-            )}
+                <div>
+                  <h4>Visit Us</h4>
+                  <p>Railway Gate, 1-2-1/1ca, Nawabpet Rd, New Gunj, Subhash Nagar, Mahbubnagar, Telangana 509001</p>
+                </div>
+              </div>
+              <div className="contact-map">
+                <iframe
+                  title="Restaurant Location"
+                  src="https://www.google.com/maps?q=railway+gate,+1-2-1%2F1ca,+Nawabpet+Rd,+New+Gunj,+Subhash+Nagar,+Mahbubnagar,+Telangana+509001&output=embed"
+                  frameBorder="0"
+                  allowFullScreen=""
+                  loading="lazy"
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* ===== FOOTER ===== */}
       <footer className="footer">
         <div className="footer-top">
-          <div className="container">
-            <div className="footer-content">
-              <div className="footer-section">
+          <div className="container footer-grid">
+            <div className="footer-brand">
+              <div className="footer-logo">
+                <FaLeaf className="footer-logo-icon" />
                 <h3>Neelakantam Tiffins</h3>
-                <p>Serving authentic South Indian cuisine since 1990.</p>
-                <div className="social-links">
-                  <motion.a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon" whileHover={{ y: -5, scale: 1.1 }}>
-                    <FaFacebookF />
-                  </motion.a>
-                  <motion.a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon" whileHover={{ y: -5, scale: 1.1 }}>
-                    <FaInstagram />
-                  </motion.a>
-                  <motion.a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-icon" whileHover={{ y: -5, scale: 1.1 }}>
-                    <FaTwitter />
-                  </motion.a>
-                  <motion.a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="social-icon" whileHover={{ y: -5, scale: 1.1 }}>
-                    <FaYoutube />
-                  </motion.a>
-                </div>
               </div>
-              <div className="footer-section">
-                <h3>Quick Links</h3>
-                <ul>
-                  {['home', 'menu', 'about', 'testimonials', 'contact'].map((item) => (
-                    <motion.li key={item} whileHover={{ x: 5 }}>
-                      <a href={`#${item}`} onClick={(e) => {e.preventDefault(); scrollToSection(item);}}>
-                        {item.charAt(0).toUpperCase() + item.slice(1)}
-                      </a>
-                    </motion.li>
-                  ))}
-                </ul>
+              <p>Serving authentic South Indian cuisine since 1990. A legacy of taste, tradition, and trust.</p>
+              <div className="social-links">
+                {[
+                  { icon: <FaFacebookF />, url: "https://facebook.com" },
+                  { icon: <FaInstagram />, url: "https://instagram.com" },
+                  { icon: <FaTwitter />, url: "https://twitter.com" },
+                  { icon: <FaYoutube />, url: "https://youtube.com" },
+                ].map((s, i) => (
+                  <motion.a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="social-btn" whileHover={{ y: -4, scale: 1.15 }}>
+                    {s.icon}
+                  </motion.a>
+                ))}
               </div>
-              <div className="footer-section">
-                <h3>Our Locations</h3>
-                <ul>
-                  <motion.li whileHover={{ x: 5 }}>Mahbubnagar Main Road</motion.li>
-                  {/* Removed Hyderabad City Center and Warangal Plaza */}
-                </ul>
-              </div>
-              <div className="footer-section">
-                <h3>Subscribe</h3>
-                <p>Subscribe to our newsletter for updates and special offers</p>
-                <div className="subscribe-form">
-                  <input type="email" placeholder="Your Email Address" aria-label="Email address for newsletter" />
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Subscribe to newsletter"
-                  >
-                    Subscribe
-                  </motion.button>
-                </div>
+            </div>
+            <div className="footer-col">
+              <h4>Quick Links</h4>
+              <ul>
+                {['home', 'menu', 'about', 'testimonials', 'contact'].map(item => (
+                  <li key={item}>
+                    <a href={`#${item}`} onClick={e => { e.preventDefault(); scrollToSection(item); }}>
+                      {item.charAt(0).toUpperCase() + item.slice(1)}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Timings</h4>
+              <ul className="timing-list">
+                <li><span>Mon {'\u2013'} Sat</span><span>7:00 AM {'\u2013'} 1:00 PM</span></li>
+                <li><span>Sunday</span><span>7:00 AM {'\u2013'} 2:00 PM</span></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Get Updates</h4>
+              <p>Subscribe to our newsletter for offers</p>
+              <div className="subscribe-box">
+                <input type="email" placeholder="your@email.com" aria-label="Email" />
+                <button aria-label="Subscribe">{'\u2192'}</button>
               </div>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <div className="container">
-            <p>&copy; {new Date().getFullYear()} Neelakantam Tiffins. All rights reserved.</p>
-            <div className="footer-links">
-              <a href="/privacy-policy">Privacy Policy</a>
-              <a href="/terms-of-service">Terms of Service</a>
+          <div className="container footer-bottom-inner">
+            <p>{'\u00A9'} {new Date().getFullYear()} Neelakantam Tiffins. All rights reserved.</p>
+            <div className="footer-bottom-links">
+              <a href="/privacy-policy">Privacy</a>
+              <a href="/terms-of-service">Terms</a>
             </div>
           </div>
         </div>
       </footer>
 
-      <style jsx>{`
-        /* Global Styles */
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        :root {
-          --primary-color: #FF6B35;
-          --primary-light: #FF8B5C;
-          --primary-dark: #E84A00;
-          --secondary-color: #2EC4B6;
-          --background-color: #FDFDFD;
-          --text-color: #1A1A2E;
-          --text-light: #4A4A6A;
-          --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-          --transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
-          --border-radius: 8px;
-        }
-        
-        body {
-          background-color: var(--background-color);
-          color: var(--text-color);
-          line-height: 1.7;
-          overflow-x: hidden;
-          font-weight: 400;
-        }
-        
-        .container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 2rem;
-          position: relative;
-          z-index: 2;
-        }
-        
-        .section {
-          padding: 120px 0;
-          position: relative;
-        }
-        
-        .section-title {
-          text-align: center;
-          margin-bottom: 4rem;
-        }
-        
-        .section-title h2 {
-          font-size: 2.8rem;
-          margin-bottom: 1.5rem;
-          font-weight: 700;
-          color: var(--text-color);
-        }
-        
-        .section-subtitle {
-          font-size: 1.1rem;
-          color: var(--text-light);
-          margin-top: 1rem;
-          font-weight: 300;
-        }
-        
-        .underline {
-          height: 4px;
-          width: 80px;
-          background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
-          margin: 0 auto;
-          border-radius: 2px;
-        }
-        
-        .btn-primary {
-          display: inline-block;
-          background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-          color: white;
-          padding: 1rem 2.5rem;
-          border: none;
-          border-radius: var(--border-radius);
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 1rem;
-          transition: var(--transition);
-          box-shadow: 0 10px 20px rgba(255, 107, 53, 0.2);
-          position: relative;
-          z-index: 1;
-          overflow: hidden;
-          letter-spacing: 1px;
-        }
-        
-        .btn-primary:before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 0;
-          height: 100%;
-          background: linear-gradient(45deg, var(--primary-light), var(--primary-color));
-          transition: var(--transition);
-          z-index: -1;
-        }
-        
-        .btn-primary:hover:before {
-          width: 100%;
-        }
-        
-        .btn-primary:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 15px 25px rgba(255, 107, 53, 0.3);
-        }
-        
-        .btn-secondary {
-          display: inline-block;
-          background: transparent;
-          color: var(--primary-color);
-          padding: 0.8rem 2rem;
-          border: 2px solid var(--primary-color);
-          border-radius: var(--border-radius);
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 1rem;
-          transition: var(--transition);
-          position: relative;
-          z-index: 1;
-          overflow: hidden;
-          margin-top: 1.5rem;
-        }
-        
-        .btn-secondary:before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 0;
-          height: 100%;
-          background-color: var(--primary-color);
-          transition: var(--transition);
-          z-index: -1;
-        }
-        
-        .btn-secondary:hover:before {
-          width: 100%;
-        }
-        
-        .btn-secondary:hover {
-          color: white;
-        }
-        
-        /* Header Styles */
-        .header {
-          background-color: transparent;
-          color: var(--light-text);
-          padding: 1.5rem 0;
-          position: fixed;
-          width: 100%;
-          top: 0;
-          z-index: 1000;
-          transition: var(--transition);
-        }
-        
-        .header.scrolled {
-          background-color: rgba(255, 255, 255, 0.95);
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-          padding: 1rem 0;
-        }
-        
-        .header.scrolled .logo h1 {
-          color: var(--text-color);
-        }
-        
-        .header-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        .logo h1 {
-          font-size: 2rem;
-          margin-bottom: 0;
-          font-weight: 700;
-          background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          transition: var(--transition);
-        }
-        
-        .mobile-menu-toggle {
-          display: none;
-          cursor: pointer;
-          z-index: 10;
-        }
-        
-        /* Navigation Styles */
-        .navigation {
-          background-color: transparent;
-          padding: 0.5rem 0;
-          position: fixed;
-          width: 100%;
-          top: 0;
-          z-index: 999;
-          transition: var(--transition);
-        }
-        
-        .navigation.scrolled {
-          background-color: transparent;
-        }
-        
-        .nav-list {
-          display: flex;
-          justify-content: flex-end;
-          list-style: none;
-          padding: 1.5rem 0;
-        }
-        
-        .nav-list li {
-          margin: 0 1.2rem;
-          padding: 0.5rem 0;
-          color: white;
-          cursor: pointer;
-          position: relative;
-          font-weight: 500;
-          transition: var(--transition);
-        }
-        
-        .navigation.scrolled .nav-list li {
-          color: var(--text-color);
-        }
-        
-        .nav-list li:hover, .nav-list li.active {
-          color: var(--primary-color);
-        }
-        
-        .nav-list li:after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          width: 0;
-          height: 2px;
-          background-color: var(--primary-color);
-          transition: var(--transition);
-          transform: translateX(-50%);
-        }
-        
-        .nav-list li.active:after,
-        .nav-list li:hover:after {
-          width: 100%;
-        }
-        
-        /* Hero Section */
-        .hero {
-          height: 100vh;
-          background: url('/hero-bg.jpg') center/cover no-repeat;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          color: white;
-          padding: 0 1rem;
-          overflow: hidden;
-        }
-        
-        .hero-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(45deg, rgba(26, 26, 46, 0.8), rgba(46, 196, 182, 0.5));
-          z-index: 1;
-        }
-        
-        .hero-content {
-          max-width: 800px;
-          position: relative;
-          z-index: 2;
-        }
-        
-        .hero h1 {
-          font-size: 3.5rem;
-          margin-bottom: 1.5rem;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-          font-weight: 800;
-          line-height: 1.2;
-        }
-        
-        .hero p {
-          font-size: 1.2rem;
-          margin-bottom: 2.5rem;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-          max-width: 700px;
-          margin-left: auto;
-          margin-right: auto;
-          font-weight: 300;
-        }
-        
-        .hero-scroll-indicator {
-          position: absolute;
-          bottom: 40px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 2;
-        }
-        
-        .hero-scroll-indicator span {
-          display: block;
-          width: 30px;
-          height: 50px;
-          border: 2px solid rgba(255, 255, 255, 0.7);
-          border-radius: 15px;
-          position: relative;
-        }
-        
-        .hero-scroll-indicator span:before {
-          content: '';
-          position: absolute;
-          top: 8px;
-          left: 50%;
-          width: 6px;
-          height: 6px;
-          background-color: white;
-          border-radius: 50%;
-          transform: translateX(-50%);
-        }
-        
-        /* Menu Section */
-        .menu {
-          background-color: #fff;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .menu:before {
-          content: '';
-          position: absolute;
-          top: -100px;
-          right: -100px;
-          width: 400px;
-          height: 400px;
-          border-radius: 50%;
-          background-color: rgba(255, 107, 53, 0.05);
-          z-index: 1;
-        }
-        
-        .menu:after {
-          content: '';
-          position: absolute;
-          bottom: -100px;
-          left: -100px;
-          width: 300px;
-          height: 300px;
-          border-radius: 50%;
-          background-color: rgba(46, 196, 182, 0.05);
-          z-index: 1;
-        }
-        
-        .menu-categories {
-          display: flex;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 1rem;
-          margin-bottom: 3rem;
-        }
-        
-        .menu-category {
-          padding: 0.5rem 1.5rem;
-          background-color: #f5f5f5;
-          border: none;
-          border-radius: 30px;
-          cursor: pointer;
-          font-weight: 500;
-          transition: var(--transition);
-          color: var(--text-light);
-        }
-        
-        .menu-category.active,
-        .menu-category:hover {
-          background-color: var(--primary-color);
-          color: white;
-          transform: translateY(-3px);
-          box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2);
-        }
-        
-        .menu-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 2.5rem;
-        }
-        
-        .menu-card {
-          background-color: white;
-          border-radius: var(--border-radius);
-          overflow: hidden;
-          box-shadow: var(--card-shadow);
-          transition: var(--transition);
-          height: 100%;
-        }
-        
-        .menu-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 30px rgba(0, 0, 0, 0.08);
-        }
-        
-        .menu-card-image {
-          position: relative;
-          overflow: hidden;
-          height: 220px;
-        }
-        
-        .menu-card-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.8s ease;
-        }
-        
-        .menu-card:hover .menu-card-image img {
-          transform: scale(1.1);
-        }
-        
-        .menu-card-price {
-          position: absolute;
-          top: 15px;
-          right: 15px;
-          background-color: var(--primary-color);
-          color: white;
-          padding: 0.5rem 1rem;
-          border-radius: 30px;
-          font-weight: 700;
-          font-size: 1rem;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .menu-card-content {
-          padding: 1.5rem;
-          display: flex;
-          flex-direction: column;
-          height: calc(100% - 220px);
-        }
-        
-        .menu-card-content h3 {
-          margin-bottom: 0.8rem;
-          color: var(--text-color);
-          font-size: 1.3rem;
-          font-weight: 600;
-        }
-        
-        .menu-card-content p {
-          margin-bottom: 1.5rem;
-          color: var(--text-light);
-          font-size: 0.95rem;
-          line-height: 1.6;
-          flex-grow: 1;
-        }
-        
-        .menu-card-button {
-          background-color: transparent;
-          color: var(--primary-color);
-          border: 1px solid var(--primary-color);
-          padding: 0.6rem 1.2rem;
-          border-radius: var(--border-radius);
-          font-weight: 600;
-          cursor: pointer;
-          transition: var(--transition);
-          align-self: flex-start;
-        }
-        
-        .menu-card-button:hover {
-          background-color: var(--primary-color);
-          color: white;
-        }
-        
-        /* About Section */
-        .about {
-          background-color: #fafafa;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .about-bg-pattern {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          top: 0;
-          left: 0;
-          background-image: 
-            radial-gradient(circle at 10% 20%, rgba(46, 196, 182, 0.05) 0%, transparent 20%),
-            radial-gradient(circle at 90% 80%, rgba(255, 107, 53, 0.05) 0%, transparent 20%);
-          z-index: 1;
-        }
-        
-        .about-content {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4rem;
-          margin-bottom: 5rem;
-          position: relative;
-          z-index: 2;
-        }
-        
-        .about-text {
-          flex: 1;
-          min-width: 300px;
-        }
-        
-        .about-text h3 {
-          margin-bottom: 2rem;
-          font-size: 2rem;
-          color: var(--text-color);
-          font-weight: 600;
-          position: relative;
-          padding-left: 15px;
-        }
-        
-        .about-text h3:before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          height: 100%;
-          width: 5px;
-          background-color: var(--primary-color);
-          border-radius: 3px;
-        }
-        
-        .about-text p {
-          margin-bottom: 1.5rem;
-          color: var(--text-light);
-          font-size: 1.05rem;
-          line-height: 1.8;
-        }
-        
-        .about-image {
-          flex: 1;
-          min-width: 300px;
-          position: relative;
-          z-index: 2;
-        }
-        
-        .about-image img {
-          width: 100%;
-          border-radius: var(--border-radius);
-          box-shadow: var(--card-shadow);
-          position: relative;
-          z-index: 2;
-        }
-        
-        .about-image-accent {
-          position: absolute;
-          top: -20px;
-          right: -20px;
-          width: 100%;
-          height: 100%;
-          border: 5px solid var(--secondary-color);
-          border-radius: var(--border-radius);
-          z-index: 1;
-        }
-        
-        .features {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 2.5rem;
-          position: relative;
-          z-index: 2;
-        }
-        
-        .feature {
-          background-color: white;
-          padding: 2.5rem 2rem;
-          border-radius: var(--border-radius);
-          box-shadow: var(--card-shadow);
-          transition: var(--transition);
-          text-align: center;
-        }
-        
-        .feature-icon {
-          font-size: 2.5rem;
-          margin-bottom: 1.5rem;
-          display: inline-block;
-          background-color: rgba(46, 196, 182, 0.1);
-          width: 80px;
-          height: 80px;
-          line-height: 80px;
-          border-radius: 50%;
-          color: var(--secondary-color);
-        }
-        
-        .feature h3 {
-          margin-bottom: 1rem;
-          color: var(--text-color);
-          font-size: 1.3rem;
-          font-weight: 600;
-        }
-        
-        .feature p {
-          color: var(--text-light);
-          font-size: 0.95rem;
-          line-height: 1.7;
-        }
-        
-        /* Testimonials Section */
-        .testimonials {
-          background-color: #fff;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .testimonials:before {
-          content: '';
-          position: absolute;
-          right: 0;
-          top: 0;
-          width: 300px;
-          height: 300px;
-          background-color: rgba(46, 196, 182, 0.05);
-          clip-path: polygon(100% 0, 0 0, 100% 100%);
-        }
-        
-        .testimonials-container {
-          max-width: 1100px;
-          margin: 0 auto;
-          position: relative;
-        }
-        
-        .testimonial-slider {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 450px;
-          position: relative;
-        }
-        .testimonial-card.testimonial-slide-image {
-          background: none;
-          box-shadow: none;
-          border-radius: 0;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 450px;
-          max-width: 350px;
-          position: relative;
-        }
-        .testimonial-slide-img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.10);
-          border: none;
-          display: block;
-          background: #fff;
-        }
-        .testimonial-arrow {
-          background: rgba(255,255,255,0.85);
-          border: none;
-          border-radius: 50%;
-          width: 44px;
-          height: 44px;
-          font-size: 1.5rem;
-          color: var(--primary-color);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: absolute;
-        }
-        .testimonial-arrow.left {
-          left: 0;
-        }
-        .testimonial-arrow.right {
-          right: 0;
-        }
-        .testimonial-arrow:hover {
-          background: var(--primary-color);
-          color: #fff;
-        }
-        @media (max-width: 900px) {
-          .testimonial-card.testimonial-slide-image {
-            height: 250px;
-            max-width: 98vw;
-          }
-        }
-        @media (max-width: 600px) {
-          .testimonial-card.testimonial-slide-image {
-            height: 160px;
-            max-width: 98vw;
-          }
-          .testimonial-slide-img {
-            height: 100%;
-            width: 100%;
-          }
-          .testimonial-arrow {
-            width: 36px;
-            height: 36px;
-            font-size: 1.2rem;
-          }
-        }
-        
-        /* Contact Section */
-        .contact {
-          background-color: #fafafa;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .contact-bg-pattern {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          top: 0;
-          left: 0;
-          background-image: url('/pattern-bg.png');
-          opacity: 0.05;
-          z-index: 1;
-        }
-        
-        .contact-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 3rem;
-          position: relative;
-          z-index: 2;
-        }
-        
-        .contact-info {
-          flex: 1;
-          min-width: 300px;
-        }
-        
-        .contact-title {
-          margin-bottom: 2rem;
-          font-size: 1.8rem;
-          color: var(--text-color);
-          font-weight: 600;
-        }
-        
-        .contact-item {
-          display: flex;
-          align-items: flex-start;
-          margin-bottom: 2rem;
-        }
-        
-        .contact-icon {
-          width: 50px;
-          height: 50px;
-          background-color: rgba(46, 196, 182, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          margin-right: 1.5rem;
-          color: var(--secondary-color);
-          font-size: 1.2rem;
-        }
-        
-        .contact-item h3 {
-          margin-bottom: 0.5rem;
-          color: var(--text-color);
-          font-size: 1.2rem;
-          font-weight: 500;
-        }
-        
-        .contact-item p {
-          color: var(--text-light);
-        }
-        
-        .contact-map {
-          margin-top: 3rem;
-          border-radius: var(--border-radius);
-          overflow: hidden;
-          box-shadow: var(--card-shadow);
-        }
-        
-        .contact-map iframe {
-          width: 100%;
-          height: 250px;
-        }
-        
-        .contact-form {
-          flex: 1;
-          min-width: 300px;
-          background-color: white;
-          padding: 3rem;
-          border-radius: var(--border-radius);
-          box-shadow: var(--card-shadow);
-        }
-        
-        .contact-form h3 {
-          margin-bottom: 2rem;
-          color: var(--text-color);
-          font-size: 1.8rem;
-          text-align: center;
-          font-weight: 600;
-        }
-        
-        .form-group {
-          margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-          display: block;
-          margin-bottom: 0.5rem;
-          color: var(--text-color);
-          font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-          width: 100%;
-          padding: 0.8rem 1rem;
-          border: 1px solid #e0e0e0;
-          border-radius: var(--border-radius);
-          font-size: 1rem;
-          color: var(--text-color);
-          transition: var(--transition);
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-          border-color: var(--secondary-color);
-          outline: none;
-          box-shadow: 0 0 0 3px rgba(46, 196, 182, 0.1);
-        }
-        
-        .form-group textarea {
-          resize: vertical;
-        }
-        
-        /* Footer */
-        .footer {
-          background-color: #1A1A2E;
-          color: #fff;
-          overflow: hidden;
-        }
-        
-        .footer-top {
-          padding: 5rem 0 3rem;
-          background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
-        }
-        
-        .footer-content {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          gap: 3rem;
-        }
-        
-        .footer-section {
-          flex: 1;
-          min-width: 250px;
-        }
-        
-        .footer-section h3 {
-          font-size: 1.5rem;
-          margin-bottom: 1.5rem;
-          position: relative;
-          font-weight: 600;
-          color: #fff;
-          padding-bottom: 0.8rem;
-        }
-        
-        .footer-section h3:after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 50px;
-          height: 3px;
-          background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-          border-radius: 3px;
-        }
-        
-        .footer-section p {
-          margin-bottom: 1.5rem;
-          color: rgba(255, 255, 255, 0.7);
-          line-height: 1.7;
-        }
-        
-        .social-links {
-          display: flex;
-          gap: 1rem;
-        }
-        
-        .social-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-          border-radius: 50%;
-          color: white;
-          text-decoration: none;
-          font-size: 1.1rem;
-          transition: var(--transition);
-        }
-        
-        .footer-section ul {
-          list-style: none;
-        }
-        
-        .footer-section ul li {
-          margin-bottom: 0.8rem;
-          transition: var(--transition);
-        }
-        
-        .footer-section ul li a {
-          color: rgba(255, 255, 255, 0.7);
-          text-decoration: none;
-          transition: var(--transition);
-        }
-        
-        .footer-section ul li a:hover {
-          color: var(--primary-color);
-        }
-        
-        .subscribe-form {
-          display: flex;
-          margin-top: 1rem;
-          position: relative;
-        }
-        
-        .subscribe-form input {
-          flex-grow: 1;
-          padding: 0.8rem 1rem;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background-color: rgba(255, 255, 255, 0.05);
-          color: white;
-          border-radius: var(--border-radius) 0 0 var(--border-radius);
-          outline: none;
-        }
-        
-        .subscribe-form button {
-          background: var(--primary-color);
-          color: white;
-          border: none;
-          padding: 0 1.5rem;
-          font-weight: 600;
-          cursor: pointer;
-          border-radius: 0 var(--border-radius) var(--border-radius) 0;
-          transition: var(--transition);
-        }
-        
-        .subscribe-form button:hover {
-          background: var(--primary-dark);
-        }
-        
-        .footer-bottom {
-          background-color: #0F0F1A;
-          padding: 1.5rem 0;
-        }
-        
-        .footer-bottom .container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        .footer-bottom p {
-          color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .footer-links {
-          display: flex;
-          gap: 1.5rem;
-        }
-        
-        .footer-links a {
-          color: rgba(255, 255, 255, 0.5);
-          text-decoration: none;
-          transition: var(--transition);
-        }
-        
-        .footer-links a:hover {
-          color: var(--primary-color);
-        }
-        
-        /* Phone Link Styles */
-        .phone-link {
-          display: block;
-          color: var(--text-light);
-          text-decoration: none;
-          transition: var(--transition);
-        }
-        
-        .phone-link:hover {
-          color: var(--primary-color);
-        }
-        
-        .phone-link:hover p {
-          font-weight: 600;
-        }
-        
-        .phone-icon {
-          color: var(--primary-color);
-          background-color: rgba(255, 107, 53, 0.1);
-        }
-        
-        .call-to-action {
-          display: inline-block;
-          font-size: 0.8rem;
-          margin-top: 0.25rem;
-          color: var(--primary-color);
-          font-weight: 500;
-        }
-        
-        .highlight-phone {
-          background-color: rgba(255, 107, 53, 0.05);
-          border-radius: var(--border-radius);
-          padding: 1rem;
-        }
-        
-        .phone-link-inline {
-          color: var(--primary-color);
-          font-weight: 600;
-          text-decoration: none;
-          transition: var(--transition);
-        }
-        
-        .phone-link-inline:hover {
-          text-decoration: underline;
-        }
-        
-        .order-instructions {
-          margin: 2rem 0;
-        }
-        
-        .order-callout {
-          background-color: rgba(46, 196, 182, 0.05);
-          border-left: 4px solid var(--secondary-color);
-          padding: 1rem 1.5rem;
-          border-radius: 0 var(--border-radius) var(--border-radius) 0;
-        }
-        
-        .order-callout h4 {
-          margin-bottom: 0.5rem;
-          color: var(--secondary-color);
-        }
-        
-        .order-callout ol {
-          padding-left: 1.5rem;
-          margin-bottom: 0;
-        }
-        
-        .order-callout li {
-          margin-bottom: 0.5rem;
-        }
-        
-        .order-callout li:last-child {
-          margin-bottom: 0;
-        }
-        
-        .order-notice {
-          background-color: rgba(255, 107, 53, 0.1);
-          padding: 1rem;
-          border-radius: var(--border-radius);
-          margin-bottom: 1.5rem;
-          text-align: center;
-        }
-        
-        .order-notice p {
-          margin: 0;
-          color: var(--primary-dark);
-        }
-        
-        /* Mobile optimization for phone links */
-        @media screen and (max-width: 768px) {
-          .call-to-action {
-            display: block;
-            padding: 0.5rem 0;
-          }
-          
-          .phone-link, .phone-link-inline {
-            font-size: 1.1rem;
-          }
-        }
-        
-        /* Responsive Styles */
-        @media screen and (max-width: 1024px) {
-          .nav-list {
-            padding: 1rem 0;
-          }
-          
-          .logo h1 {
-            font-size: 1.8rem;
-          }
-          
-          .section {
-            padding: 100px 0;
-          }
-        }
-        
-        @media screen and (max-width: 768px) {
-          .mobile-menu-toggle {
-            display: block;
-            cursor: pointer;
-          }
-          
-          .hamburger {
-            width: 30px;
-            height: 20px;
-            position: relative;
-          }
-          
-          .hamburger span {
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background-color: var(--text-color);
-            transition: var(--transition);
-          }
-          
-          .header:not(.scrolled) .hamburger span {
-            background-color: white;
-          }
-          
-          .hamburger span:nth-child(1) {
-            top: 0;
-          }
-          
-          .hamburger span:nth-child(2) {
-            top: 9px;
-          }
-          
-          .hamburger span:nth-child(3) {
-            top: 18px;
-          }
-          
-          .hamburger.active span:nth-child(1) {
-            transform: rotate(45deg);
-            top: 9px;
-          }
-          
-          .hamburger.active span:nth-child(2) {
-            opacity: 0;
-          }
-          
-          .hamburger.active span:nth-child(3) {
-            transform: rotate(-45deg);
-            top: 9px;
-          }
-          
-          .navigation {
-            height: 0;
-            overflow: hidden;
-            transition: var(--transition);
-            top: 70px;
-            background-color: rgba(255, 255, 255, 0.95);
-          }
-          
-          .navigation.show {
-            height: auto;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-          }
-          
-          .nav-list {
-            flex-direction: column;
-            padding: 2rem 0;
-          }
-          
-          .nav-list li {
-            margin: 0.8rem 0;
-            text-align: center;
-            color: var(--text-color);
-          }
-          
-          .section-title h2 {
-            font-size: 2.2rem;
-          }
-          
-          .hero h1 {
-            font-size: 2.5rem;
-          }
-          
-          .about-image-accent {
-            display: none;
-          }
-          
-          .contact-form {
-            padding: 2rem;
-          }
-          
-          .footer-bottom .container {
-            flex-direction: column;
-            gap: 1rem;
-          }
-        }
-        
-        @media screen and (max-width: 480px) {
-          .hero h1 {
-            font-size: 2rem;
-          }
-          
-          .section {
-            padding: 80px 0;
-          }
-          
-          .testimonial-slider {
-            padding: 0;
-          }
-          
-          .testimonial-card {
-            flex: 0 0 100%;
-          }
-          
-          .menu-categories {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            justify-content: flex-start;
-            padding: 0.5rem 0;
-          }
-          
-          .menu-category {
-            flex: 0 0 auto;
-            white-space: nowrap;
-          }
-        }
-        
-        /* Enhanced Order Now Section Styles */
-        .contact-info.call-only {
-          flex: 1;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-        
-        .phone-highlight {
-          background: linear-gradient(120deg, #ffffff, #f9f9f9);
-          border-radius: 16px;
-          padding: 0;
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-          margin-bottom: 3rem;
-          overflow: hidden;
-          border: 1px solid rgba(255, 107, 53, 0.15);
-          position: relative;
-        }
-        
-        .phone-highlight:before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 6px;
-          background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-        }
-        
-        .pulse-animation {
-          animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-          0% {
-            box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4);
-          }
-          70% {
-            box-shadow: 0 0 0 15px rgba(255, 107, 53, 0);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
-          }
-        }
-        
-        .phone-order-container {
-          display: flex;
-          align-items: center;
-          padding: 2.5rem;
-          position: relative;
-        }
-        
-        .phone-order-icon {
-          width: 90px;
-          height: 90px;
-          background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          margin-right: 2.5rem;
-          color: white;
-          font-size: 2.2rem;
-          flex-shrink: 0;
-          box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3), inset 0 -3px 10px rgba(0, 0, 0, 0.2);
-          cursor: pointer;
-          position: relative;
-        }
-        
-        .phone-order-icon:after {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          top: 0;
-          left: 0;
-          border-radius: 50%;
-          background: transparent;
-          animation: ripple 2s infinite;
-        }
-        
-        @keyframes ripple {
-          0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.5);
-          }
-          70% {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 15px rgba(255, 107, 53, 0);
-          }
-          100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
-          }
-        }
-        
-        .phone-order-content {
-          flex-grow: 1;
-        }
-        
-        .phone-order-content h3 {
-          font-size: 1.8rem;
-          margin-bottom: 1rem;
-          color: var(--text-color);
-          font-weight: 600;
-          position: relative;
-          display: inline-block;
-        }
-        
-        .phone-link-large {
-          display: block;
-          font-size: 2.5rem;
-          font-weight: 800;
-          color: var(--primary-color);
-          text-decoration: none;
-          transition: var(--transition);
-          margin-bottom: 1.2rem;
-          position: relative;
-        }
-        
-        .phone-link-large:hover {
-          text-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-          transform: translateY(-2px);
-        }
-        
-        .phone-hours {
-          display: flex;
-          align-items: center;
-          color: var(--text-light);
-          font-size: 0.95rem;
-          background-color: rgba(46, 196, 182, 0.08);
-          padding: 0.5rem 1rem;
-          border-radius: 30px;
-          display: inline-flex;
-        }
-        
-        .hours-icon {
-          margin-right: 0.5rem;
-          color: var(--secondary-color);
-        }
-        
-        .call-now-badge {
-          display: inline-block;
-          background-color: var(--primary-color);
-          color: white;
-          padding: 0.35rem 0.75rem;
-          border-radius: 30px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          margin-left: 1rem;
-          vertical-align: middle;
-          box-shadow: 0 4px 10px rgba(255, 107, 53, 0.3);
-          animation: bounce 2s infinite;
-          position: relative;
-          top: -5px;
-        }
-        
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-          }
-          40% {
-            transform: translateY(-5px);
-          }
-          60% {
-            transform: translateY(-3px);
-          }
-        }
-        
-        /* Enhanced Order Steps */
-        .order-steps {
-          background: white;
-          border-radius: 16px;
-          padding: 2rem;
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-          margin-bottom: 2.5rem;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .order-steps:before {
-          content: '';
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 150px;
-          height: 150px;
-          background: radial-gradient(circle, rgba(46, 196, 182, 0.08) 0%, transparent 70%);
-          border-radius: 50%;
-        }
-        
-        .order-steps:after {
-                   content: '';
-          position: absolute;
-          bottom: -50px;
-          left: -50px;
-          width: 200px;
-          height: 200px;
-          background: radial-gradient(circle, rgba(255, 107, 53, 0.08) 0%, transparent 70%);
-          border-radius: 50%;
-        }
-        
-        .order-steps h4 {
-          color: var(--text-color);
-          font-size: 1.6rem;
-          margin-bottom:  1.8rem;
-          text-align: center;
-                   font-weight: 600;
-        }
-        
-        .steps-container {
-          position: relative;
-          z-index: 2;
-        }
-        
-        .step-item {
-                   display: flex;
-          align-items: flex-start;
-          background: #f9f9f9;
-                   padding: 1.5rem;
-          border-radius: 12px;
-          margin-bottom: 1.5rem;
-          transition: var(--transition);
-          border-left: 4px solid;
-          border-color: var(--secondary-color);
-               }
-        
-               
-        .step-item:last-child {
-          margin-bottom: 0;
-          border-color: var(--primary-color);
-        }
-        
-        .step-item:nth-child(2) {
-          border-color: #6A9BD8;
-        }
-        
-        .step-number {
-          width: 45px;
-          height: 45px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 1.3rem;
-          margin-right: 1.2rem;
-          flex-shrink: 0;
-          color: white;
-        }
-        
-        .step-item:first-child .step-number {
-          background: var(--secondary-color);
-          box-shadow: 0 5px 15px rgba(46, 196, 182, 0.3);
-        }
-        
-        .step-item:nth-child(2) .step-number {
-          background: #6A9BD8;
-          box-shadow: 0 5px 15px rgba(106, 155,216, 0.3);
-        }
-        
-        .step-item:last-child .step-number {
-          background: var(--primary-color);
-          box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-        }
-        
-        .step-content h5 {
-          font-size: 1.2rem;
-          margin-bottom: 0.4rem;
-          color: var(--text-color);
-          font-weight: 600;
-        }
-        
-        .step-content p {
-          color: var(--text-light);
-          margin: 0;
-          font-size: 1rem;
-        }
-        
-        .restaurant-info {
-          margin-bottom: 2.5rem;
-        }
-        
-        .info-card {
-          display: flex;
-          align-items: center;
-          background-color: white;
-          padding: 1.5rem;
-          border-radius: 12px;
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-          transition: var(--transition);
-        }
-        
-        .info-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-        }
-        
-        .info-icon {
-          width: 50px;
-          height: 50px;
-          background-color: rgba(46, 196, 182, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          margin-right: 1.5rem;
-          color: var(--secondary-color);
-          font-size: 1.2rem;
-          flex-shrink: 0;
-          transition: var(--transition);
-        }
-        
-        .info-card:hover .info-icon {
-          background-color: var(--secondary-color);
-          color: white;
-        }
-        
-        .info-card h4 {
-          font-size: 1.2rem;
-          margin-bottom: 0.25rem;
-          color: var(--text-color);
-        }
-        
-        .info-card p {
-          margin: 0;
-          color: var(--text-light);
-        }
-        
-        .contact-map {
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-          border: 6px solid white;
-          height: 300px;
-        }
-        
-        .contact-map iframe {
-          width: 100%;
-          height: 100%;
-          display: block;
-        }
-        
-        /* Mobile optimizations */
-        @media screen and (max-width: 768px) {
-          .phone-order-container {
-            flex-direction: column;
-            text-align: center;
-            padding: 1.8rem 1.5rem;
-          }
-          
-          .phone-order-icon {
-            margin-right: 0;
-            margin-bottom: 1.5rem;
-            width: 80px;
-            height: 80px;
-            font-size: 1.8rem;
-          }
-          
-          .phone-link-large {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-          }
-          
-          .call-now-badge {
-            display: block;
-            margin: 0.8rem auto 0;
-            width: max-content;
-          }
-          
-          .phone-hours {
-            justify-content: center;
-            width: max-content;
-            margin: 0 auto;
-          }
-          
-          .order-steps {
-            padding: 1.5rem;
-          }
-          
-          .step-item {
-            padding: 1rem;
-          }
-          
-          .step-number {
-            width: 35px;
-            height: 35px;
-            font-size: 1.1rem;
-          }
-          
-          .step-content h5 {
-            font-size: 1rem;
-          }
-          
-          .step-content p {
-            font-size: 0.9rem;
-          }
-        }
-        
-        @media screen and (max-width: 480px) {
-          .phone-link-large {
-            font-size: 1.5rem;
-          }
-          
-          .step-item {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          
-          .step-number {
-            margin-bottom: 0.8rem;
-          }
-          
-          .info-card {
-            flex-direction: column;
-            text-align: center;
-            padding: 1.2rem;
-          }
-          
-          .info-icon {
-            margin: 0 0 1rem 0;
-          }
-          
-          .contact-map {
-            height: 200px;
-          }
-        }
-      `}</style>
+      {/* ===== BACK TO TOP ===== */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            className="back-to-top"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            aria-label="Back to top"
+          >
+            <FaChevronUp />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* ===== STYLES ===== */}
+      <style>{styles}</style>
     </div>
   );
 };
 
+const styles = `
+  /* ========== RESET & ROOT ========== */
+  *, *::before, *::after {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+
+  :root {
+    --primary: #FF6B35;
+    --primary-light: #FF8957;
+    --primary-dark: #E85A20;
+    --accent: #2EC4B6;
+    --accent-light: #56D4C8;
+    --bg: #FAFBFC;
+    --bg-alt: #F3F4F6;
+    --surface: #FFFFFF;
+    --text: #1A1A2E;
+    --text-secondary: #5A5A7A;
+    --text-muted: #9CA3AF;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-lg: 0 20px 50px rgba(0,0,0,0.08);
+    --shadow-xl: 0 25px 60px rgba(0,0,0,0.12);
+    --radius: 12px;
+    --radius-lg: 20px;
+    --radius-full: 9999px;
+    --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .app {
+    overflow-x: hidden;
+  }
+
+  img {
+    max-width: 100%;
+    display: block;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+  }
+
+  .section {
+    padding: 100px 0;
+    position: relative;
+  }
+
+  /* ========== SECTION HEADER ========== */
+  .section-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .section-label {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--primary);
+    margin-bottom: 12px;
+    background: rgba(255,107,53,0.08);
+    padding: 6px 18px;
+    border-radius: var(--radius-full);
+  }
+  .section-header h2 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .section-underline {
+    height: 4px;
+    width: 60px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    margin: 0 auto 16px;
+    border-radius: 2px;
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ========== HEADER ========== */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 16px 0;
+    transition: var(--transition);
+    background: transparent;
+  }
+  .header.scrolled {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    padding: 10px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+  }
+  .logo h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: white;
+    transition: var(--transition);
+    line-height: 1.1;
+  }
+  .header.scrolled .logo h1 {
+    color: var(--text);
+  }
+  .logo-tagline {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+    transition: var(--transition);
+    display: block;
+  }
+  .header.scrolled .logo-tagline {
+    color: var(--text-muted);
+  }
+
+  /* Desktop Nav */
+  .desktop-nav { display: block; }
+  .nav-list {
+    display: flex;
+    list-style: none;
+    gap: 8px;
+    align-items: center;
+  }
+  .nav-list li {
+    position: relative;
+  }
+  .nav-list li a {
+    display: block;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+  }
+  .header.scrolled .nav-list li a {
+    color: var(--text-secondary);
+  }
+  .nav-list li a:hover,
+  .nav-list li.active a {
+    color: var(--primary);
+    background: rgba(255,107,53,0.08);
+  }
+  .header:not(.scrolled) .nav-list li a:hover,
+  .header:not(.scrolled) .nav-list li.active a {
+    background: rgba(255,255,255,0.12);
+    color: white;
+  }
+
+  .order-btn-header {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(255,107,53,0.3);
+  }
+  .order-btn-header:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+  }
+
+  /* Hamburger */
+  .mobile-menu-toggle {
+    display: none;
+    cursor: pointer;
+    z-index: 1001;
+    padding: 8px;
+  }
+  .hamburger {
+    width: 24px; height: 18px; position: relative;
+  }
+  .hamburger span {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: var(--transition);
+    left: 0;
+  }
+  .header.scrolled .hamburger span { background: var(--text); }
+  .hamburger span:nth-child(1) { top: 0; }
+  .hamburger span:nth-child(2) { top: 8px; }
+  .hamburger span:nth-child(3) { top: 16px; }
+  .hamburger.active span:nth-child(1) { transform: rotate(45deg); top: 8px; background: var(--text); }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: rotate(-45deg); top: 8px; background: var(--text); }
+
+  /* Mobile Drawer */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1100;
+  }
+  .mobile-drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 300px;
+    max-width: 85vw;
+    background: var(--surface);
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+  }
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--bg-alt);
+  }
+  .drawer-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+  .drawer-logo-icon { color: var(--primary); font-size: 1.2rem; }
+  .drawer-close {
+    background: var(--bg-alt);
+    border: none;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+    transition: var(--transition);
+  }
+  .drawer-close:hover { background: var(--primary); color: white; }
+  .drawer-nav {
+    list-style: none;
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+  .drawer-nav li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+  }
+  .drawer-nav li.active a,
+  .drawer-nav li a:hover {
+    color: var(--primary);
+    background: rgba(255,107,53,0.04);
+    border-left-color: var(--primary);
+  }
+  .drawer-arrow { font-size: 0.7rem; opacity: 0.4; }
+  .drawer-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--bg-alt);
+  }
+  .drawer-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--primary);
+    color: white;
+    padding: 14px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: var(--transition);
+  }
+  .drawer-cta:hover { background: var(--primary-dark); }
+
+  /* ========== HERO ========== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .hero-bg-img {
+    width: 100%;
+    height: 120%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+    will-change: transform;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(26,26,46,0.88) 0%,
+      rgba(26,26,46,0.65) 40%,
+      rgba(46,196,182,0.4) 100%
+    );
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    padding: 0 24px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 8px 20px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+  .hero-badge-star { color: #FFD700; }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+  .hero-highlight {
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 32px;
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary);
+    color: white;
+    padding: 14px 32px;
+    border: none;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 8px 25px rgba(255,107,53,0.35);
+    font-family: var(--font);
+  }
+  .btn-primary:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 12px 35px rgba(255,107,53,0.45);
+  }
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    color: white;
+    padding: 14px 32px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    backdrop-filter: blur(4px);
+    font-family: var(--font);
+  }
+  .btn-outline:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  .hero-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg);
+    padding: 20px 40px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-stat strong {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: white;
+  }
+  .hero-stat span {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  .hero-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255,255,255,0.2);
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .scroll-mouse {
+    width: 24px; height: 38px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    padding-top: 8px;
+  }
+  .scroll-dot {
+    width: 4px; height: 8px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 2px;
+    animation: scrollDot 2s ease-in-out infinite;
+  }
+  @keyframes scrollDot {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0.3; transform: translateY(8px); }
+  }
+  .scroll-indicator span {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 500;
+  }
+
+  /* ========== MENU SECTION ========== */
+  .menu-section {
+    background: var(--bg);
+  }
+  .section-decoration {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .deco-circle {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .deco-1 {
+    width: 400px; height: 400px;
+    top: -150px; right: -100px;
+    background: radial-gradient(circle, rgba(255,107,53,0.04) 0%, transparent 70%);
+  }
+  .deco-2 {
+    width: 350px; height: 350px;
+    bottom: -100px; left: -80px;
+    background: radial-gradient(circle, rgba(46,196,182,0.04) 0%, transparent 70%);
+  }
+
+  .category-tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 48px;
+  }
+  .category-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: 1.5px solid var(--bg-alt);
+    background: var(--surface);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: var(--font);
+  }
+  .category-tab:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .category-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 14px rgba(255,107,53,0.25);
+  }
+  .cat-icon {
+    font-size: 1rem;
+    display: inline-flex;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .menu-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: var(--transition);
+  }
+  .menu-card:hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card-image {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+  }
+  .card-image img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .menu-card:hover .card-image img {
+    transform: scale(1.08);
+  }
+  .card-price-badge {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: var(--surface);
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,26,46,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .menu-card:hover .card-overlay {
+    opacity: 1;
+  }
+  .card-order-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+    transition: var(--transition);
+    font-family: var(--font);
+  }
+  .card-order-btn:hover {
+    background: var(--primary-dark);
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+  .card-body h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .card-body p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-tag {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(46,196,182,0.08);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+  }
+  .card-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: var(--font);
+  }
+  .card-link-btn:hover {
+    gap: 8px;
+  }
+
+  /* ========== ABOUT SECTION ========== */
+  .about-section {
+    background: var(--bg-alt);
+  }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .about-img-container {
+    position: relative;
+  }
+  .about-img-container img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    z-index: 2;
+  }
+  .about-img-accent {
+    position: absolute;
+    top: -16px; right: -16px;
+    width: 100%; height: 100%;
+    border: 3px solid var(--accent);
+    border-radius: var(--radius-lg);
+    z-index: 1;
+    opacity: 0.3;
+  }
+  .about-exp-badge {
+    position: absolute;
+    bottom: -20px; left: 24px;
+    background: var(--primary);
+    color: white;
+    padding: 16px 24px;
+    border-radius: var(--radius);
+    z-index: 3;
+    box-shadow: 0 8px 25px rgba(255,107,53,0.35);
+    text-align: center;
+  }
+  .about-exp-badge strong {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .about-exp-badge span {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.85;
+  }
+
+  .about-text h3 {
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 20px;
+    line-height: 1.3;
+  }
+  .about-text p {
+    color: var(--text-secondary);
+    font-size: 0.98rem;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .about-highlights {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .about-highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: var(--transition);
+  }
+  .about-highlight-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .highlight-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+  }
+  .about-highlight-item strong {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .about-highlight-item span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* ========== TESTIMONIALS ========== */
+  .testimonials-section {
+    background: var(--surface);
+  }
+  .testimonial-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .carousel-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1.5px solid var(--bg-alt);
+    background: var(--surface);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+  .carousel-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 6px 18px rgba(255,107,53,0.25);
+  }
+  .carousel-viewport {
+    flex: 1;
+    max-width: 580px;
+    min-height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .testimonial-slide {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .testimonial-image-wrapper {
+    width: 100%;
+    max-width: 480px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .testimonial-image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 32px;
+  }
+  .carousel-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-alt);
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 0;
+  }
+  .carousel-dot.active {
+    background: var(--primary);
+    width: 28px;
+    border-radius: 5px;
+  }
+
+  /* ========== CONTACT SECTION ========== */
+  .contact-section {
+    background: var(--bg-alt);
+  }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .zomato-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+  .zomato-card.pulse {
+    animation: cardPulse 2s ease-in-out 2;
+  }
+  @keyframes cardPulse {
+    0%, 100% { box-shadow: var(--shadow-md); }
+    50% { box-shadow: 0 0 0 8px rgba(255,107,53,0.12), var(--shadow-lg); }
+  }
+  .zomato-card-glow {
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .zomato-icon-wrap {
+    margin-bottom: 20px;
+  }
+  .zomato-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.6rem;
+    box-shadow: 0 10px 30px rgba(255,107,53,0.3);
+    cursor: pointer;
+    position: relative;
+  }
+  .zomato-icon::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255,107,53,0.2);
+    animation: spinSlow 20s linear infinite;
+  }
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+  .zomato-card h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .zomato-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: white;
+    padding: 14px 32px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 8px 25px rgba(255,107,53,0.3);
+    margin-bottom: 20px;
+  }
+  .zomato-link:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 12px 35px rgba(255,107,53,0.45);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .zomato-hours {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    background: var(--bg-alt);
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+  }
+  .zomato-hours svg { color: var(--accent); }
+
+  .steps-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+  .steps-card h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    transition: var(--transition);
+    cursor: default;
+  }
+  .step-row:hover {
+    background: var(--bg-alt);
+    box-shadow: var(--shadow-sm);
+  }
+  .step-num {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .step-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .step-info strong {
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .step-info span {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .location-card {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .location-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .location-icon-wrap {
+    width: 48px; height: 48px;
+    background: rgba(46,196,182,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .location-info h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .location-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .contact-map {
+    border-radius: var(--radius);
+    overflow: hidden;
+    height: 260px;
+    box-shadow: var(--shadow-sm);
+  }
+  .contact-map iframe {
+    width: 100%; height: 100%;
+    display: block;
+    border: none;
+  }
+
+  /* ========== FOOTER ========== */
+  .footer {
+    background: #121220;
+    color: white;
+  }
+  .footer-top {
+    padding: 64px 0 40px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
+    gap: 40px;
+  }
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .footer-logo-icon {
+    color: var(--primary);
+    font-size: 1.4rem;
+  }
+  .footer-logo h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+  .footer-brand p {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .social-links {
+    display: flex;
+    gap: 10px;
+  }
+  .social-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+  .social-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .footer-col h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 12px;
+  }
+  .footer-col h4::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 30px; height: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  .footer-col ul {
+    list-style: none;
+  }
+  .footer-col ul li {
+    margin-bottom: 10px;
+  }
+  .footer-col ul li a {
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+  .footer-col ul li a:hover {
+    color: var(--primary);
+    padding-left: 6px;
+  }
+  .footer-col p {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+  .timing-list li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.5);
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .subscribe-box {
+    display: flex;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .subscribe-box input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: none;
+    padding: 12px 14px;
+    color: white;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .subscribe-box input::placeholder {
+    color: rgba(255,255,255,0.3);
+  }
+  .subscribe-box button {
+    background: var(--primary);
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .subscribe-box button:hover {
+    background: var(--primary-dark);
+  }
+
+  .footer-bottom {
+    background: rgba(0,0,0,0.3);
+    padding: 18px 0;
+  }
+  .footer-bottom-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-bottom p {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.35);
+  }
+  .footer-bottom-links {
+    display: flex;
+    gap: 20px;
+  }
+  .footer-bottom-links a {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.35);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  .footer-bottom-links a:hover {
+    color: var(--primary);
+  }
+
+  /* ========== BACK TO TOP ========== */
+  .back-to-top {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 900;
+    box-shadow: 0 6px 20px rgba(255,107,53,0.35);
+    transition: var(--transition);
+  }
+  .back-to-top:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 8px 28px rgba(255,107,53,0.45);
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 1024px) {
+    .about-grid {
+      gap: 40px;
+    }
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .desktop-nav, .order-btn-header { display: none; }
+    .mobile-menu-toggle { display: block; }
+
+    .section { padding: 72px 0; }
+
+    .hero-stats {
+      gap: 20px;
+      padding: 16px 24px;
+    }
+    .hero-stat strong { font-size: 1.3rem; }
+
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+    .about-img-accent { display: none; }
+    .about-highlights {
+      grid-template-columns: 1fr;
+    }
+
+    .menu-grid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+    .zomato-card, .steps-card, .location-card {
+      grid-column: auto;
+      grid-row: auto;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .footer-bottom-inner {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .carousel-viewport {
+      min-height: 380px;
+    }
+    .testimonial-image-wrapper {
+      max-width: 400px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 0 16px; }
+    .section { padding: 56px 0; }
+
+    .section-header h2 { font-size: 1.7rem; }
+    .hero h1 { font-size: 1.9rem; }
+    .hero p { font-size: 0.95rem; }
+
+    .hero-stats {
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 16px;
+    }
+    .hero-stat-divider { display: none; }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-primary, .btn-outline {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .menu-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .category-tabs {
+      justify-content: flex-start;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      gap: 8px;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .category-tab {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+    }
+
+    .about-exp-badge {
+      bottom: -16px; left: 16px;
+      padding: 12px 18px;
+    }
+    .about-exp-badge strong { font-size: 1.4rem; }
+
+    .carousel-viewport {
+      min-height: 300px;
+    }
+    .carousel-btn {
+      width: 38px; height: 38px;
+      font-size: 0.85rem;
+    }
+    .testimonial-image-wrapper {
+      max-width: 320px;
+    }
+
+    .zomato-card { padding: 28px 20px; }
+    .steps-card { padding: 24px 18px; }
+    .location-card { padding: 24px 18px; }
+
+    .scroll-indicator { bottom: 16px; }
+
+    .back-to-top {
+      bottom: 18px; right: 18px;
+      width: 42px; height: 42px;
+    }
+  }
+`;
+
 export default App;
+

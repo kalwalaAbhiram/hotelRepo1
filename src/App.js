@@ -54,12 +54,12 @@ const App = () => {
     { id: 5, name: 'Uthappam', description: 'Thick pancake with vegetables and spices', price: 55, image: '/tiffins/uttapam.jpg', category: 'breakfast' },
     { id: 6, name: 'Upma Dosa', description: 'Dosa filled with savory semolina upma', price: 55, image: '/tiffins/upmadosa.jpg', category: 'dosas' },
     { id: 7, name: 'Neeyi Dosa', description: 'Ghee-roasted dosa with delicious aroma', price: 55, image: '/tiffins/upma.webp', category: 'dosas' },
-    { id: 8, name: 'Mysoor Bajji', description: 'Deep-fried with a Mysore touch', price: 40, image: '/tiffins/bonda.jpg', category: 'snacks' },
+    { id: 8, name: 'Mysoor Bajji', description: 'Deep-fried with a Mysore touch', price: 40, image: '/tiffins/bonda.jpg', category: 'breakfast' },
     { id: 9, name: 'Poori', description: 'Deep-fried wheat bread served with potato curry', price: 40, image: '/tiffins/poori.png', category: 'breakfast' },
     { id: 10, name: 'Idli', description: 'Steamed rice cake served with sambar and chutney', price: 40, image: '/tiffins/idly.jpg', category: 'breakfast' },
     { id: 11, name: 'Upma', description: 'Savory semolina porridge with vegetables', price: 35, image: '/tiffins/upma 1.webp', category: 'breakfast' },
     { id: 12, name: 'Ragi Dosa', description: 'Nutritious finger millet dosa with health benefits', price: 55, image: '/tiffins/ragi.jpg', category: 'dosas' },
-    { id: 13, name: 'Vada', description: 'Crispy fried lentil donuts served with sambar', price: 40, image: '/tiffins/vada.jpg', category: 'snacks' },
+    { id: 13, name: 'Vada', description: 'Crispy fried lentil donuts served with sambar', price: 40, image: '/tiffins/vada.jpg', category: 'breakfast' },
   ];
 
   const filteredItems = activeCategory === 'all' ? menuItems : menuItems.filter(item => item.category === activeCategory);
@@ -91,7 +91,6 @@ const App = () => {
     { key: 'all', label: 'All Items', icon: <FaUtensils /> },
     { key: 'dosas', label: 'Dosas', icon: '\ud83e\uded3' },
     { key: 'breakfast', label: 'Breakfast', icon: '\ud83c\udf73' },
-    { key: 'snacks', label: 'Snacks', icon: '\ud83c\udf58' },
   ];
 
   return (
